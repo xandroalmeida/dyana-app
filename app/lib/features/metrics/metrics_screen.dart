@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/firebase/firebase_providers.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../meditation/session_repository.dart';
+import '../share/share_service.dart';
 import 'meditation_metrics.dart';
 
 class MetricsScreen extends ConsumerWidget {
@@ -119,12 +119,17 @@ class MetricsScreen extends ConsumerWidget {
     BuildContext context,
     MeditationMetrics metrics,
   ) async {
-    final text = 'Ja pratiquei ${metrics.totalMinutes} minutos de meditacao.';
-    await Clipboard.setData(ClipboardData(text: text));
+    final text = ShareText.metrics(
+      totalMinutes: metrics.totalMinutes,
+      sessionsThisWeek: metrics.practiceDaysThisWeek,
+    );
+    final shared = await const ShareService().shareOrCopy(text);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(const SnackBar(content: Text('Texto copiado.')));
+      ..showSnackBar(
+        SnackBar(content: Text(shared ? 'Compartilhado.' : 'Texto copiado.')),
+      );
   }
 }
 

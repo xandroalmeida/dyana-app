@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
+import '../share/share_service.dart';
 
 class CompletionScreen extends StatelessWidget {
   const CompletionScreen({super.key, required this.duration});
@@ -51,11 +51,13 @@ class CompletionScreen extends StatelessWidget {
     final minutes = duration.inMinutes;
     final text = minutes <= 0
         ? 'Conclui uma sessao de meditacao hoje.'
-        : 'Meditei por $minutes minutos hoje.';
-    await Clipboard.setData(ClipboardData(text: text));
+        : ShareText.session(minutes: minutes);
+    final shared = await const ShareService().shareOrCopy(text);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(const SnackBar(content: Text('Texto copiado.')));
+      ..showSnackBar(
+        SnackBar(content: Text(shared ? 'Compartilhado.' : 'Texto copiado.')),
+      );
   }
 }
