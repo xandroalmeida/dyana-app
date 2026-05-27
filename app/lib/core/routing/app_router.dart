@@ -11,23 +11,16 @@ import '../../features/meditation/home_screen.dart';
 import '../firebase/firebase_providers.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final authRefresh = GoRouterRefreshStream(
-    ref.watch(firebaseAuthProvider).authStateChanges(),
-  );
+  final auth = ref.watch(firebaseAuthProvider);
+  final authRefresh = GoRouterRefreshStream(auth.authStateChanges());
   ref.onDispose(authRefresh.dispose);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/',
     refreshListenable: authRefresh,
     redirect: (context, state) {
-      if (authState.isLoading) return null;
-
-      final isAuthenticated = authState.valueOrNull != null;
-      final isAuthRoute = switch (state.matchedLocation) {
-        '/login' || '/signup' || '/reset-password' => true,
-        _ => false,
-      };
+      final isAuthenticated = auth.currentUser != null;
+      final isAuthRoute = isAuthRouteLocation(state.matchedLocation);
 
       if (!isAuthenticated && !isAuthRoute) return '/login';
       if (isAuthenticated && isAuthRoute) return '/';
@@ -46,7 +39,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+
+  return router;
 });
+
+bool isAuthRouteLocation(String location) {
+  return switch (location) {
+    '/login' || '/signup' || '/reset-password' => true,
+    _ => false,
+  };
+}
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {

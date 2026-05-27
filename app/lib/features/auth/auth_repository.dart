@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -28,6 +29,10 @@ class AuthRepository {
   }
 
   Future<UserCredential> signInWithGoogle() async {
+    if (kIsWeb) {
+      return _auth.signInWithPopup(GoogleAuthProvider());
+    }
+
     final googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) {
       throw FirebaseAuthException(
