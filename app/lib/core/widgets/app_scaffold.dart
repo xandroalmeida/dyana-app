@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../version/app_version.dart';
+
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
     required this.child,
@@ -40,11 +42,28 @@ class AppScaffold extends StatelessWidget {
               actions: actions,
             ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Padding(padding: const EdgeInsets.all(16), child: child),
-          ),
+        child: Stack(
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Padding(padding: const EdgeInsets.all(16), child: child),
+              ),
+            ),
+            if (AppVersion.value != 'dev')
+              Positioned(
+                right: 12,
+                bottom: 8,
+                child: Text(
+                  AppVersion.value,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
