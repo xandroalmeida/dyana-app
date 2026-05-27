@@ -15,7 +15,8 @@ service cloud.firestore {
       allow delete: if false;
 
       match /sessions/{sessionId} {
-        allow read, create, update: if owns(uid)
+        allow read: if owns(uid);
+        allow create, update: if owns(uid)
           && request.resource.data.durationSeconds is int
           && request.resource.data.durationSeconds > 0
           && request.resource.data.mode in ['fixed', 'free'];
