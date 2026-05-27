@@ -55,7 +55,11 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
-    await GoogleSignIn().signOut();
+    if (kIsWeb) {
+      return _auth.signOut();
+    }
+
     await _auth.signOut();
+    await GoogleSignIn().signOut().catchError((_) => null);
   }
 }
