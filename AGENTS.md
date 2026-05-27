@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## Politica de Git/GitHub
+
+Sempre use `gh` para interagir com o GitHub e com o estado remoto do repositorio. Evite `git push`, `git fetch` e outras operacoes remotas via transporte HTTPS direto, pois esse ambiente pode travar nesse caminho.
+
+Para publicar commits, atualizar referencias, consultar runs, criar tags ou inspecionar o remoto, prefira `gh` ou a API do GitHub via `gh api`. Comandos locais de git continuam permitidos para estado local, diff, add, commit, log, status e tags locais quando necessario.
+
 ## Politica de Versionamento
 
 Release/tag/deploy automatico so devem ser disparados quando o usuario pedir explicitamente uma nova release ou pedir explicitamente para gerar uma versao. Nao crie tag, nao publique release e nao dispare o workflow de deploy apenas por ter feito commit, fix, melhoria ou ajuste de infraestrutura.
