@@ -56,9 +56,11 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const path = 'build/web/flutter_bootstrap.js';
           const version = process.env.GITHUB_REF_NAME;
-          const bootstrap = fs.readFileSync(path, 'utf8');
+          const bootstrapPath = 'build/web/flutter_bootstrap.js';
+          const serviceWorkerPath = 'build/web/flutter_service_worker.js';
+
+          const bootstrap = fs.readFileSync(bootstrapPath, 'utf8');
           const stamped = bootstrap.replace(
             /serviceWorkerVersion: "[^"]+"/,
             `serviceWorkerVersion: "${version}"`
@@ -66,7 +68,13 @@ jobs:
           if (stamped === bootstrap) {
             throw new Error('Could not stamp serviceWorkerVersion');
           }
-          fs.writeFileSync(path, stamped);
+          fs.writeFileSync(bootstrapPath, stamped);
+
+          const serviceWorker = fs.readFileSync(serviceWorkerPath, 'utf8');
+          fs.writeFileSync(
+            serviceWorkerPath,
+            `/* Dyana release ${version} */\n${serviceWorker}`
+          );
           NODE
 
       - name: Deploy to Firebase Hosting
