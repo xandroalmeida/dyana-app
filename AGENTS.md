@@ -154,14 +154,16 @@ curl -sI https://dayana-716b3.web.app/main.dart.js | rg -i 'cache-control|last-m
 
 ## Politica de Git/GitHub
 
-Sempre use `gh` para interagir com o GitHub e com o estado remoto do repositorio. Evite `git push`, `git fetch` e outras operacoes remotas via transporte HTTPS direto, pois esse ambiente pode travar nesse caminho.
+Use `git` de linha de comando para operacoes normais de controle de versao: `status`, `diff`, `add`, `commit`, `log`, `branch`, `checkout`/`switch`, `fetch`, `pull`, `push`, tags locais e publicacao de refs.
 
-Para publicar commits, atualizar referencias, consultar runs, criar tags ou inspecionar o remoto, prefira `gh` ou a API do GitHub via `gh api`. Comandos locais de git continuam permitidos para estado local, diff, add, commit, log, status e tags locais quando necessario.
+Use `gh` apenas para tarefas especificas do GitHub: consultar ou criar PRs, issues, releases do GitHub, Actions/runs/checks, metadados do repositorio e chamadas explicitas a API do GitHub.
 
-O branch remoto `main` pode estar mais avancado que o tracking local porque algumas publicacoes foram feitas via `gh api`. Antes de publicar no remoto, consulte o head real com:
+Antes de publicar mudancas importantes, atualize e confira o estado remoto com `git fetch` e comandos locais de Git:
 
 ```bash
-gh api repos/xandroalmeida/dyana-app/git/ref/heads/main
+git fetch origin
+git status --short --branch
+git log --oneline --decorate --max-count=5 origin/main
 ```
 
 ## Politica de Versionamento
@@ -199,41 +201,18 @@ Quando, e somente quando, o usuario pedir explicitamente uma release:
 
 1. Descobrir a proxima tag conforme a politica.
 2. Garantir que o remoto `main` aponta para o commit correto.
-3. Criar tag anotada via `gh api`, nao via `git push`.
+3. Criar tag anotada com `git tag -a` e publicar com `git push`.
 4. Acompanhar o workflow `Deploy Web`.
 5. Validar producao com `curl`.
 
-Fluxo via API, adaptando `version`:
+Fluxo via Git, adaptando `version`:
 
 ```bash
-node <<'NODE'
-const { execFileSync } = require('child_process');
-const repo = 'xandroalmeida/dyana-app';
-const version = 'vA.B.C';
-function gh(args, input) {
-  return execFileSync('gh', ['api', ...args], {
-    input,
-    encoding: 'utf8',
-    maxBuffer: 20 * 1024 * 1024,
-  });
-}
-function json(args, input) {
-  return JSON.parse(gh(args, input));
-}
-const head = json([`repos/${repo}/git/ref/heads/main`]);
-const commitSha = head.object.sha;
-const tag = json([`repos/${repo}/git/tags`, '--method', 'POST', '--input', '-'], JSON.stringify({
-  tag: version,
-  message: `Release ${version}`,
-  object: commitSha,
-  type: 'commit',
-}));
-json([`repos/${repo}/git/refs`, '--method', 'POST', '--input', '-'], JSON.stringify({
-  ref: `refs/tags/${version}`,
-  sha: tag.sha,
-}));
-console.log(JSON.stringify({ version, commitSha, tagSha: tag.sha }, null, 2));
-NODE
+git fetch origin
+git switch main
+git pull --ff-only origin main
+git tag -a vA.B.C -m "Release vA.B.C"
+git push origin vA.B.C
 ```
 
 Depois acompanhe:
