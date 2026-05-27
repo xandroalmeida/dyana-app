@@ -56,6 +56,7 @@ void main() {
         'endSoundEnabled': true,
         'defaultDurationMinutes': 20,
         'themeMode': 'dark',
+        'language': 'system',
       });
     });
   });

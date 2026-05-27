@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import 'auth_error_message.dart';
 import 'auth_repository.dart';
 
-String? requiredEmail(String? value) {
-  if (value == null || value.trim().isEmpty) return 'Informe seu e-mail.';
-  if (!value.contains('@')) return 'Informe um e-mail valido.';
+String? requiredEmail(String? value, String requiredMessage, String invalid) {
+  if (value == null || value.trim().isEmpty) return requiredMessage;
+  if (!value.contains('@')) return invalid;
   return null;
 }
 
-String? _requiredPassword(String? value) {
-  if (value == null || value.isEmpty) return 'Informe sua senha.';
+String? _requiredPassword(String? value, String requiredMessage) {
+  if (value == null || value.isEmpty) return requiredMessage;
   return null;
 }
 
@@ -48,9 +49,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .signInWithEmail(_emailController.text, _passwordController.text);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(authErrorMessage(error))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authErrorMessage(context.l10n, error))),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -63,9 +64,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authRepositoryProvider).signInWithGoogle();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(authErrorMessage(error))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authErrorMessage(context.l10n, error))),
+        );
       }
     } finally {
       if (mounted) setState(() => _isGoogleSubmitting = false);
@@ -75,16 +76,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isBusy = _isSubmitting || _isGoogleSubmitting;
+    final l10n = context.l10n;
 
     return AppScaffold(
-      title: 'Dyana',
+      title: l10n.appTitle,
       child: Form(
         key: _formKey,
         child: ListView(
           shrinkWrap: true,
           children: [
             Text(
-              'Entrar',
+              l10n.signIn,
               style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
@@ -94,8 +96,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.email],
-              decoration: const InputDecoration(labelText: 'E-mail'),
-              validator: requiredEmail,
+              decoration: InputDecoration(labelText: l10n.email),
+              validator: (value) =>
+                  requiredEmail(value, l10n.requiredEmail, l10n.invalidEmail),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -103,13 +106,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               obscureText: true,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.password],
-              decoration: const InputDecoration(labelText: 'Senha'),
-              validator: _requiredPassword,
+              decoration: InputDecoration(labelText: l10n.password),
+              validator: (value) =>
+                  _requiredPassword(value, l10n.requiredPassword),
               onFieldSubmitted: (_) => isBusy ? null : _submit(),
             ),
             const SizedBox(height: 24),
             PrimaryButton(
-              label: _isSubmitting ? 'Entrando...' : 'Entrar',
+              label: _isSubmitting ? l10n.signingIn : l10n.signIn,
               onPressed: isBusy ? null : _submit,
             ),
             const SizedBox(height: 12),
@@ -117,16 +121,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               onPressed: isBusy ? null : _signInWithGoogle,
               icon: const Icon(Icons.login),
               label: Text(
-                _isGoogleSubmitting ? 'Entrando...' : 'Entrar com Google',
+                _isGoogleSubmitting ? l10n.signingIn : l10n.signInWithGoogle,
               ),
             ),
             TextButton(
               onPressed: isBusy ? null : () => context.go('/signup'),
-              child: const Text('Criar conta'),
+              child: Text(l10n.createAccount),
             ),
             TextButton(
               onPressed: isBusy ? null : () => context.go('/reset-password'),
-              child: const Text('Esqueci minha senha'),
+              child: Text(l10n.forgotPassword),
             ),
           ],
         ),

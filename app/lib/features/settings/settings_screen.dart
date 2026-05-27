@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/firebase/firebase_providers.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../profile/profile_repository.dart';
@@ -24,6 +25,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _endSoundEnabled = true;
   int _defaultDurationMinutes = 10;
   AppThemePreference _themeMode = AppThemePreference.system;
+  AppLanguagePreference _language = AppLanguagePreference.system;
   bool _isDirty = false;
   bool _isSaving = false;
 
@@ -33,10 +35,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final user = auth.currentUser;
 
     if (user == null) {
-      return const AppScaffold(
-        title: 'Configuracoes',
+      return AppScaffold(
+        title: context.l10n.settings,
         showBackButton: true,
-        child: Text('Entre para editar suas configuracoes.'),
+        child: Text(context.l10n.signInToEditSettings),
       );
     }
 
@@ -50,7 +52,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final ensureProfileFuture = _ensureProfile(repository, fallbackProfile);
 
     return AppScaffold(
-      title: 'Configuracoes',
+      title: context.l10n.settings,
       showBackButton: true,
       child: FutureBuilder<void>(
         future: ensureProfileFuture,
@@ -61,7 +63,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           if (ensureSnapshot.hasError) {
             return _ErrorMessage(
-              message: 'Nao foi possivel carregar suas configuracoes.',
+              message: context.l10n.settingsLoadError,
               onRetry: () {
                 setState(() {
                   _ensureProfileFuture = null;
@@ -84,7 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Som ao iniciar'),
+                      title: Text(context.l10n.startSound),
                       value: _startSoundEnabled,
                       onChanged: (value) {
                         setState(() {
@@ -95,7 +97,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Som ao terminar'),
+                      title: Text(context.l10n.endSound),
                       value: _endSoundEnabled,
                       onChanged: (value) {
                         setState(() {
@@ -107,14 +109,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<AppThemePreference>(
                       initialValue: _themeMode,
-                      decoration: const InputDecoration(
-                        labelText: 'Aparencia',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.appearance,
                       ),
                       items: AppThemePreference.values
                           .map(
                             (themeMode) => DropdownMenuItem(
                               value: themeMode,
-                              child: Text(_themeModeLabel(themeMode)),
+                              child: Text(_themeModeLabel(context, themeMode)),
                             ),
                           )
                           .toList(),
@@ -127,10 +129,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
+                    DropdownButtonFormField<AppLanguagePreference>(
+                      initialValue: _language,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.language,
+                      ),
+                      items: AppLanguagePreference.values
+                          .map(
+                            (language) => DropdownMenuItem(
+                              value: language,
+                              child: Text(_languageLabel(context, language)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _language = value;
+                          _isDirty = true;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
                       initialValue: _defaultDurationMinutes,
-                      decoration: const InputDecoration(
-                        labelText: 'Duracao padrao',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.defaultDuration,
                       ),
                       items: _durationOptions
                           .map(
@@ -150,7 +174,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
-                      label: _isSaving ? 'Salvando...' : 'Salvar',
+                      label: _isSaving
+                          ? context.l10n.saving
+                          : context.l10n.save,
                       onPressed: _isSaving
                           ? null
                           : () => _saveSettings(repository, profile),
@@ -169,6 +195,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ProfileRepository repository,
     UserProfile currentProfile,
   ) async {
+    final settingsSavedMessage = context.l10n.settingsSaved;
+    final saveErrorMessage = context.l10n.saveError;
     setState(() => _isSaving = true);
     try {
       await repository.save(
@@ -184,13 +212,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             endSoundEnabled: _endSoundEnabled,
             defaultDurationMinutes: _defaultDurationMinutes,
             themeMode: _themeMode,
+            language: _language,
           ),
         ),
       );
-      _showSnackBar('Configuracoes salvas.');
+      _showSnackBar(settingsSavedMessage);
       if (mounted) setState(() => _isDirty = false);
     } catch (_) {
-      _showSnackBar('Nao foi possivel salvar.');
+      _showSnackBar(saveErrorMessage);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -224,6 +253,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ? preferences.defaultDurationMinutes
         : 10;
     _themeMode = preferences.themeMode;
+    _language = preferences.language;
   }
 
   void _showSnackBar(String message) {
@@ -234,11 +264,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-String _themeModeLabel(AppThemePreference themeMode) {
+String _themeModeLabel(BuildContext context, AppThemePreference themeMode) {
   return switch (themeMode) {
-    AppThemePreference.system => 'Sistema',
-    AppThemePreference.light => 'Claro',
-    AppThemePreference.dark => 'Escuro',
+    AppThemePreference.system => context.l10n.system,
+    AppThemePreference.light => context.l10n.light,
+    AppThemePreference.dark => context.l10n.dark,
+  };
+}
+
+String _languageLabel(BuildContext context, AppLanguagePreference language) {
+  return switch (language) {
+    AppLanguagePreference.system => context.l10n.system,
+    AppLanguagePreference.en => context.l10n.english,
+    AppLanguagePreference.pt => context.l10n.portuguese,
+    AppLanguagePreference.es => context.l10n.spanish,
   };
 }
 
@@ -256,7 +295,7 @@ class _ErrorMessage extends StatelessWidget {
       children: [
         Text(message, textAlign: TextAlign.center),
         const SizedBox(height: 16),
-        PrimaryButton(label: 'Tentar novamente', onPressed: onRetry),
+        PrimaryButton(label: context.l10n.tryAgain, onPressed: onRetry),
       ],
     );
   }

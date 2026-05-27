@@ -5,6 +5,4 @@ class AppVersion {
   );
 
   static bool get isRelease => value != 'dev';
-
-  static String get label => 'Versao $value';
 }

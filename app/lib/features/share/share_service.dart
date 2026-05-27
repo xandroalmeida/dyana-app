@@ -1,17 +1,22 @@
 import 'package:flutter/services.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import 'share_platform.dart';
 
 class ShareText {
-  static String session({required int minutes}) {
-    return 'Meditei por $minutes minutos hoje.';
+  static String session({
+    required AppLocalizations l10n,
+    required int minutes,
+  }) {
+    return l10n.shareSessionText(minutes);
   }
 
   static String metrics({
+    required AppLocalizations l10n,
     required int totalMinutes,
     required int sessionsThisWeek,
   }) {
-    return 'Ja pratiquei $totalMinutes minutos de meditacao. Nesta semana, completei $sessionsThisWeek sessoes.';
+    return l10n.shareMetricsText(totalMinutes, sessionsThisWeek);
   }
 }
 

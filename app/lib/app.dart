@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/firebase/firebase_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'features/profile/profile_repository.dart';
 import 'features/profile/user_profile.dart';
 
@@ -20,6 +21,21 @@ final appThemePreferenceProvider = StreamProvider<AppThemePreference>((ref) {
   });
 });
 
+final appLanguagePreferenceProvider = StreamProvider<AppLanguagePreference>((
+  ref,
+) {
+  final authState = ref.watch(authStateProvider);
+  final user = authState.valueOrNull;
+  if (user == null) return Stream.value(AppLanguagePreference.system);
+
+  final repository = ProfileRepository(ref.watch(firestoreProvider));
+  return repository.watch(user.uid).map((snapshot) {
+    final data = snapshot.data();
+    if (data == null) return AppLanguagePreference.system;
+    return UserProfile.fromJson(data).preferences.language;
+  });
+});
+
 class DyanaApp extends ConsumerWidget {
   const DyanaApp({super.key});
 
@@ -29,13 +45,28 @@ class DyanaApp extends ConsumerWidget {
     final themePreference =
         ref.watch(appThemePreferenceProvider).valueOrNull ??
         AppThemePreference.system;
+    final languagePreference =
+        ref.watch(appLanguagePreferenceProvider).valueOrNull ??
+        AppLanguagePreference.system;
 
     return MaterialApp.router(
       title: 'Dyana',
+      locale: localeFromLanguagePreference(languagePreference),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: buildLightAppTheme(),
       darkTheme: buildDarkAppTheme(),
       themeMode: themeModeFromPreference(themePreference),
       routerConfig: router,
     );
   }
+}
+
+Locale? localeFromLanguagePreference(AppLanguagePreference preference) {
+  return switch (preference) {
+    AppLanguagePreference.system => null,
+    AppLanguagePreference.en => const Locale('en'),
+    AppLanguagePreference.pt => const Locale('pt'),
+    AppLanguagePreference.es => const Locale('es'),
+  };
 }

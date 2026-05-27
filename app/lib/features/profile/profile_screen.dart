@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/firebase/firebase_providers.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import 'profile_repository.dart';
@@ -38,10 +39,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = auth.currentUser;
 
     if (user == null) {
-      return const AppScaffold(
-        title: 'Perfil',
+      return AppScaffold(
+        title: context.l10n.profile,
         showBackButton: true,
-        child: Text('Entre para editar seu perfil.'),
+        child: Text(context.l10n.signInToEditProfile),
       );
     }
 
@@ -55,7 +56,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final ensureProfileFuture = _ensureProfile(repository, fallbackProfile);
 
     return AppScaffold(
-      title: 'Perfil',
+      title: context.l10n.profile,
       showBackButton: true,
       child: FutureBuilder<void>(
         future: ensureProfileFuture,
@@ -66,7 +67,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           if (ensureSnapshot.hasError) {
             return _ErrorMessage(
-              message: 'Nao foi possivel carregar seu perfil.',
+              message: context.l10n.profileLoadError,
               onRetry: () {
                 setState(() {
                   _ensureProfileFuture = null;
@@ -92,32 +93,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     TextField(
                       controller: _nameController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Nome'),
+                      decoration: InputDecoration(labelText: context.l10n.name),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       readOnly: true,
                       initialValue: profile.email,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: InputDecoration(
+                        labelText: context.l10n.email,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _genderController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Genero'),
+                      decoration: InputDecoration(
+                        labelText: context.l10n.gender,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _birthDateController,
                       keyboardType: TextInputType.datetime,
-                      decoration: const InputDecoration(
-                        labelText: 'Data de nascimento',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.birthDate,
                         hintText: 'yyyy-MM-dd',
                       ),
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
-                      label: _isSaving ? 'Salvando...' : 'Salvar',
+                      label: _isSaving
+                          ? context.l10n.saving
+                          : context.l10n.save,
                       onPressed: _isSaving
                           ? null
                           : () => _saveProfile(repository, profile),
@@ -139,10 +146,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final birthDateText = _birthDateController.text.trim();
     final birthDate = parseBirthDate(birthDateText);
     if (birthDateText.isNotEmpty && birthDate == null) {
-      _showSnackBar('Use a data no formato yyyy-MM-dd.');
+      _showSnackBar(context.l10n.birthDateFormatError);
       return;
     }
 
+    final profileSavedMessage = context.l10n.profileSaved;
+    final saveErrorMessage = context.l10n.saveError;
     setState(() => _isSaving = true);
     try {
       final profile = UserProfile(
@@ -155,9 +164,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         preferences: currentProfile.preferences,
       );
       await repository.save(profile);
-      _showSnackBar('Perfil salvo.');
+      _showSnackBar(profileSavedMessage);
     } catch (_) {
-      _showSnackBar('Nao foi possivel salvar.');
+      _showSnackBar(saveErrorMessage);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -239,7 +248,7 @@ class _ErrorMessage extends StatelessWidget {
       children: [
         Text(message, textAlign: TextAlign.center),
         const SizedBox(height: 16),
-        PrimaryButton(label: 'Tentar novamente', onPressed: onRetry),
+        PrimaryButton(label: context.l10n.tryAgain, onPressed: onRetry),
       ],
     );
   }

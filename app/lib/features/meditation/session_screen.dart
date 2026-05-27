@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/firebase/firebase_providers.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../profile/profile_repository.dart';
@@ -157,9 +158,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
       setState(() => _isFinishing = false);
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
-        ..showSnackBar(
-          const SnackBar(content: Text('Nao foi possivel salvar a sessao.')),
-        );
+        ..showSnackBar(SnackBar(content: Text(context.l10n.sessionSaveError)));
     }
   }
 
@@ -167,15 +166,16 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
   Widget build(BuildContext context) {
     final remaining = _remaining;
     final displayDuration = remaining ?? _elapsed;
+    final l10n = context.l10n;
 
     return AppScaffold(
-      title: 'Meditacao',
+      title: l10n.meditation,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            widget.mode == MeditationMode.free ? 'Tempo livre' : 'Respire',
+            widget.mode == MeditationMode.free ? l10n.freeTime : l10n.breathe,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineLarge,
           ),
@@ -187,20 +187,20 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            remaining == null ? 'tempo praticado' : 'tempo restante',
+            remaining == null ? l10n.timePracticed : l10n.timeRemaining,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 32),
           PrimaryButton(
-            label: _isPaused ? 'Retomar' : 'Pausar',
+            label: _isPaused ? l10n.resume : l10n.pause,
             icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
             onPressed: _isFinishing ? null : _togglePause,
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: _isFinishing ? null : () => _finish(completed: false),
-            child: Text(_isFinishing ? 'Salvando...' : 'Encerrar'),
+            child: Text(_isFinishing ? l10n.saving : l10n.finish),
           ),
         ],
       ),

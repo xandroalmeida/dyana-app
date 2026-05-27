@@ -1,5 +1,6 @@
 import 'package:app/core/widgets/app_scaffold.dart';
 import 'package:app/core/widgets/primary_button.dart';
+import 'package:app/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -24,6 +25,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: AppScaffold(
           title: 'Historico',
           showBackButton: true,
@@ -32,7 +35,7 @@ void main() {
       ),
     );
 
-    expect(find.byTooltip('Voltar'), findsOneWidget);
+    expect(find.byTooltip('Back'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
   });
 
@@ -41,14 +44,16 @@ void main() {
   ) async {
     await tester.pumpWidget(
       const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: AppScaffold(title: 'Inicio', child: Text('Conteudo')),
       ),
     );
 
     if (appVersion == 'dev') {
-      expect(find.textContaining('Versao'), findsNothing);
+      expect(find.textContaining('Version'), findsNothing);
     } else {
-      expect(find.text('Versao $appVersion'), findsOneWidget);
+      expect(find.text('Version $appVersion'), findsOneWidget);
     }
   });
 }

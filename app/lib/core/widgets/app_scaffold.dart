@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../l10n/app_l10n.dart';
 import '../version/app_version.dart';
 
 class AppScaffold extends StatelessWidget {
@@ -23,7 +24,7 @@ class AppScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final versionStamp = AppVersion.isRelease
         ? Text(
-            AppVersion.label,
+            context.l10n.versionLabel(AppVersion.value),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: Theme.of(
@@ -39,7 +40,7 @@ class AppScaffold extends StatelessWidget {
           : AppBar(
               leading: showBackButton
                   ? IconButton(
-                      tooltip: 'Voltar',
+                      tooltip: context.l10n.back,
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () {
                         if (context.canPop()) {

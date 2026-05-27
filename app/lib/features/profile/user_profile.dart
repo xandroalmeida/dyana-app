@@ -2,18 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum AppThemePreference { system, light, dark }
 
+enum AppLanguagePreference { system, en, pt, es }
+
 class UserPreferences {
   const UserPreferences({
     this.startSoundEnabled = true,
     this.endSoundEnabled = true,
     this.defaultDurationMinutes = 10,
     this.themeMode = AppThemePreference.system,
+    this.language = AppLanguagePreference.system,
   });
 
   final bool startSoundEnabled;
   final bool endSoundEnabled;
   final int defaultDurationMinutes;
   final AppThemePreference themeMode;
+  final AppLanguagePreference language;
 
   factory UserPreferences.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const UserPreferences();
@@ -24,6 +28,7 @@ class UserPreferences {
       defaultDurationMinutes:
           _intFromJson(json['defaultDurationMinutes']) ?? 10,
       themeMode: _themePreferenceFromJson(json['themeMode']),
+      language: _languagePreferenceFromJson(json['language']),
     );
   }
 
@@ -33,6 +38,7 @@ class UserPreferences {
       'endSoundEnabled': endSoundEnabled,
       'defaultDurationMinutes': defaultDurationMinutes,
       'themeMode': themeMode.name,
+      'language': language.name,
     };
   }
 }
@@ -131,5 +137,14 @@ AppThemePreference _themePreferenceFromJson(Object? value) {
   return AppThemePreference.values.firstWhere(
     (preference) => preference.name == value,
     orElse: () => AppThemePreference.system,
+  );
+}
+
+AppLanguagePreference _languagePreferenceFromJson(Object? value) {
+  if (value is! String) return AppLanguagePreference.system;
+
+  return AppLanguagePreference.values.firstWhere(
+    (preference) => preference.name == value,
+    orElse: () => AppLanguagePreference.system,
   );
 }

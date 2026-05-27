@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../auth/auth_repository.dart';
@@ -19,21 +20,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return AppScaffold(
-      title: 'Dyana',
+      title: l10n.appTitle,
       actions: [
         IconButton(
-          tooltip: 'Perfil',
+          tooltip: l10n.profile,
           onPressed: () => context.go('/profile'),
           icon: const Icon(Icons.person_outline),
         ),
         IconButton(
-          tooltip: 'Configuracoes',
+          tooltip: l10n.settings,
           onPressed: () => context.go('/settings'),
           icon: const Icon(Icons.settings_outlined),
         ),
         IconButton(
-          tooltip: 'Sair',
+          tooltip: l10n.signOut,
           onPressed: () => ref.read(authRepositoryProvider).signOut(),
           icon: const Icon(Icons.logout),
         ),
@@ -43,13 +46,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Dyana',
+            l10n.appTitle,
             style: Theme.of(context).textTheme.headlineMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           Text(
-            'Respire. Comece uma sessao quando estiver pronto.',
+            l10n.homeSubtitle,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
@@ -70,7 +73,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 24),
           PrimaryButton(
-            label: 'Iniciar',
+            label: l10n.start,
             icon: const Icon(Icons.play_arrow),
             onPressed: () {
               context.go('/session?mode=fixed&minutes=$_selectedDuration');
@@ -79,7 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 12),
           TextButton(
             onPressed: () => context.go('/session?mode=free'),
-            child: const Text('Tempo livre'),
+            child: Text(l10n.freeTime),
           ),
           const SizedBox(height: 24),
           Row(
@@ -87,11 +90,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               TextButton(
                 onPressed: () => context.go('/history'),
-                child: const Text('Historico'),
+                child: Text(l10n.history),
               ),
               TextButton(
                 onPressed: () => context.go('/metrics'),
-                child: const Text('Metricas'),
+                child: Text(l10n.metrics),
               ),
             ],
           ),

@@ -35,6 +35,7 @@ void main() {
           'endSoundEnabled': true,
           'defaultDurationMinutes': 15,
           'themeMode': 'dark',
+          'language': 'es',
         },
       });
 
@@ -48,6 +49,7 @@ void main() {
       expect(profile.preferences.endSoundEnabled, isTrue);
       expect(profile.preferences.defaultDurationMinutes, 15);
       expect(profile.preferences.themeMode, AppThemePreference.dark);
+      expect(profile.preferences.language, AppLanguagePreference.es);
     });
 
     test('uses defaults for missing or malformed preferences', () {
@@ -62,14 +64,16 @@ void main() {
       expect(profile.preferences.endSoundEnabled, isTrue);
       expect(profile.preferences.defaultDurationMinutes, 10);
       expect(profile.preferences.themeMode, AppThemePreference.system);
+      expect(profile.preferences.language, AppLanguagePreference.system);
     });
 
-    test('serializes preferences with theme mode', () {
+    test('serializes preferences with theme mode and language', () {
       const preferences = UserPreferences(
         startSoundEnabled: false,
         endSoundEnabled: false,
         defaultDurationMinutes: 20,
         themeMode: AppThemePreference.light,
+        language: AppLanguagePreference.pt,
       );
 
       expect(preferences.toJson(), {
@@ -77,6 +81,7 @@ void main() {
         'endSoundEnabled': false,
         'defaultDurationMinutes': 20,
         'themeMode': 'light',
+        'language': 'pt',
       });
     });
   });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/firebase/firebase_providers.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../meditation/session_repository.dart';
@@ -16,15 +17,15 @@ class MetricsScreen extends ConsumerWidget {
     final user = ref.watch(firebaseAuthProvider).currentUser;
 
     if (user == null) {
-      return const AppScaffold(
-        title: 'Metricas',
+      return AppScaffold(
+        title: context.l10n.metrics,
         showBackButton: true,
-        child: Text('Entre para ver suas metricas.'),
+        child: Text(context.l10n.signInToViewMetrics),
       );
     }
 
     return AppScaffold(
-      title: 'Metricas',
+      title: context.l10n.metrics,
       showBackButton: true,
       child: StreamBuilder(
         stream: ref.watch(sessionRepositoryProvider).watchRecent(user.uid),
@@ -34,9 +35,7 @@ class MetricsScreen extends ConsumerWidget {
           }
 
           if (snapshot.hasError) {
-            return const Center(
-              child: Text('Nao foi possivel carregar suas metricas.'),
-            );
+            return Center(child: Text(context.l10n.metricsLoadError));
           }
 
           final metrics = MeditationMetrics.fromSessions(
@@ -53,42 +52,44 @@ class MetricsScreen extends ConsumerWidget {
                   runSpacing: 12,
                   children: [
                     _MetricCard(
-                      label: 'Ultimos 7 dias',
+                      label: context.l10n.last7Days,
                       value: '${metrics.minutesLast7Days} min',
                     ),
                     _MetricCard(
-                      label: 'Ultimos 30 dias',
+                      label: context.l10n.last30Days,
                       value: '${metrics.minutesLast30Days} min',
                     ),
                     _MetricCard(
-                      label: 'Sessoes',
+                      label: context.l10n.sessions,
                       value: '${metrics.totalSessions}',
                     ),
                     _MetricCard(
-                      label: 'Total',
+                      label: context.l10n.total,
                       value: '${metrics.totalMinutes} min',
                     ),
                     _MetricCard(
-                      label: 'Sequencia atual',
-                      value: '${metrics.currentStreakDays} dias',
+                      label: context.l10n.currentStreak,
+                      value:
+                          '${metrics.currentStreakDays} ${context.l10n.daysUnit}',
                     ),
                     _MetricCard(
-                      label: 'Maior sequencia',
-                      value: '${metrics.longestStreakDays} dias',
+                      label: context.l10n.longestStreak,
+                      value:
+                          '${metrics.longestStreakDays} ${context.l10n.daysUnit}',
                     ),
                     _MetricCard(
-                      label: 'Media',
+                      label: context.l10n.average,
                       value:
                           '${metrics.averageMinutesPerSession.toStringAsFixed(1)} min',
                     ),
                     _MetricCard(
-                      label: 'Dias na semana',
+                      label: context.l10n.daysThisWeek,
                       value: '${metrics.practiceDaysThisWeek}',
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                ..._milestones(metrics).map(
+                ..._milestones(context, metrics).map(
                   (text) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(text),
@@ -96,7 +97,7 @@ class MetricsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 PrimaryButton(
-                  label: 'Compartilhar',
+                  label: context.l10n.share,
                   onPressed: () => _copyMetrics(context, metrics),
                 ),
               ],
@@ -107,13 +108,13 @@ class MetricsScreen extends ConsumerWidget {
     );
   }
 
-  List<String> _milestones(MeditationMetrics metrics) {
+  List<String> _milestones(BuildContext context, MeditationMetrics metrics) {
     return [
-      if (metrics.totalSessions >= 1) 'Primeira sessao registrada.',
-      if (metrics.practiceDaysThisWeek >= 7) '7 dias com pratica acumulada.',
-      if (metrics.totalMinutes >= 30) '30 minutos acumulados.',
-      if (metrics.totalSessions >= 10) '10 sessoes concluidas.',
-      if (metrics.totalMinutes >= 100) '100 minutos acumulados.',
+      if (metrics.totalSessions >= 1) context.l10n.firstSessionMilestone,
+      if (metrics.practiceDaysThisWeek >= 7) context.l10n.sevenDaysMilestone,
+      if (metrics.totalMinutes >= 30) context.l10n.thirtyMinutesMilestone,
+      if (metrics.totalSessions >= 10) context.l10n.tenSessionsMilestone,
+      if (metrics.totalMinutes >= 100) context.l10n.hundredMinutesMilestone,
     ];
   }
 
@@ -122,6 +123,7 @@ class MetricsScreen extends ConsumerWidget {
     MeditationMetrics metrics,
   ) async {
     final text = ShareText.metrics(
+      l10n: context.l10n,
       totalMinutes: metrics.totalMinutes,
       sessionsThisWeek: metrics.practiceDaysThisWeek,
     );
@@ -130,7 +132,9 @@ class MetricsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
-        SnackBar(content: Text(shared ? 'Compartilhado.' : 'Texto copiado.')),
+        SnackBar(
+          content: Text(shared ? context.l10n.shared : context.l10n.textCopied),
+        ),
       );
   }
 }

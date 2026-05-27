@@ -3,18 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/firebase/firebase_providers.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../meditation/meditation_session.dart';
 import '../meditation/session_repository.dart';
 
 enum HistoryPeriod {
-  sevenDays('7 dias', 7),
-  thirtyDays('30 dias', 30),
-  all('Tudo', null);
+  sevenDays(7),
+  thirtyDays(30),
+  all(null);
 
-  const HistoryPeriod(this.label, this.days);
+  const HistoryPeriod(this.days);
 
-  final String label;
   final int? days;
 }
 
@@ -33,15 +33,15 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final user = ref.watch(firebaseAuthProvider).currentUser;
 
     if (user == null) {
-      return const AppScaffold(
-        title: 'Historico',
+      return AppScaffold(
+        title: context.l10n.history,
         showBackButton: true,
-        child: Text('Entre para ver seu historico.'),
+        child: Text(context.l10n.signInToViewHistory),
       );
     }
 
     return AppScaffold(
-      title: 'Historico',
+      title: context.l10n.history,
       showBackButton: true,
       child: StreamBuilder<List<MeditationSession>>(
         stream: ref.watch(sessionRepositoryProvider).watchRecent(user.uid),
@@ -51,9 +51,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           }
 
           if (snapshot.hasError) {
-            return const Center(
-              child: Text('Nao foi possivel carregar o historico.'),
-            );
+            return Center(child: Text(context.l10n.historyLoadError));
           }
 
           final sessions = _filter(snapshot.data ?? const []);
@@ -66,7 +64,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     .map(
                       (period) => ButtonSegment(
                         value: period,
-                        label: Text(period.label),
+                        label: Text(_periodLabel(context, period)),
                       ),
                     )
                     .toList(),
@@ -77,9 +75,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               ),
               const SizedBox(height: 16),
               if (sessions.isEmpty)
-                const Expanded(
-                  child: Center(child: Text('Suas sessoes aparecerao aqui.')),
-                )
+                Expanded(child: Center(child: Text(context.l10n.historyEmpty)))
               else
                 Expanded(
                   child: ListView.separated(
@@ -108,6 +104,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 }
 
+String _periodLabel(BuildContext context, HistoryPeriod period) {
+  return switch (period) {
+    HistoryPeriod.sevenDays => context.l10n.periodSevenDays,
+    HistoryPeriod.thirtyDays => context.l10n.periodThirtyDays,
+    HistoryPeriod.all => context.l10n.periodAll,
+  };
+}
+
 class _SessionTile extends StatelessWidget {
   const _SessionTile({required this.session});
 
@@ -115,13 +119,16 @@ class _SessionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('dd/MM/yyyy HH:mm').format(session.startedAt);
+    final l10n = context.l10n;
+    final date = DateFormat.yMd(
+      l10n.localeName,
+    ).add_Hm().format(session.startedAt);
     final minutes = session.durationSeconds ~/ 60;
     final seconds = session.durationSeconds % 60;
     final mode = session.mode == MeditationMode.free
-        ? 'Tempo livre'
-        : 'Tempo definido';
-    final status = session.completed ? 'Concluida' : 'Encerrada';
+        ? l10n.freeTime
+        : l10n.definedTime;
+    final status = session.completed ? l10n.completed : l10n.ended;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
