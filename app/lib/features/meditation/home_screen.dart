@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
@@ -13,6 +14,16 @@ class HomeScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Dyana',
       actions: [
+        IconButton(
+          tooltip: 'Perfil',
+          onPressed: () => context.go('/profile'),
+          icon: const Icon(Icons.person_outline),
+        ),
+        IconButton(
+          tooltip: 'Configuracoes',
+          onPressed: () => context.go('/settings'),
+          icon: const Icon(Icons.settings_outlined),
+        ),
         IconButton(
           tooltip: 'Sair',
           onPressed: () => ref.read(authRepositoryProvider).signOut(),

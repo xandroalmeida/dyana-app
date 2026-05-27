@@ -8,6 +8,8 @@ import '../../features/auth/login_screen.dart';
 import '../../features/auth/reset_password_screen.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/meditation/home_screen.dart';
+import '../../features/profile/profile_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../firebase/firebase_providers.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -28,6 +30,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
