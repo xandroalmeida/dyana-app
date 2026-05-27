@@ -1,23 +1,37 @@
 {
     "name": "Dyana",
     "short_name": "Dyana",
-    "start_url": ".",
+    "id": "/",
+    "start_url": "/",
+    "scope": "/",
+    "lang": "pt-BR",
+    "dir": "ltr",
     "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
     "background_color": "#F5F5F7",
     "theme_color": "#F5F5F7",
     "description": "Um timer calmo para meditar.",
     "orientation": "portrait-primary",
+    "categories": ["health", "lifestyle", "productivity"],
     "prefer_related_applications": false,
     "icons": [
         {
+            "src": "icons/Icon-180.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-maskable-192.png",
