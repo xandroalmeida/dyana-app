@@ -23,6 +23,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _startSoundEnabled = true;
   bool _endSoundEnabled = true;
   int _defaultDurationMinutes = 10;
+  AppThemePreference _themeMode = AppThemePreference.system;
   bool _isDirty = false;
   bool _isSaving = false;
 
@@ -104,6 +105,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
+                    DropdownButtonFormField<AppThemePreference>(
+                      initialValue: _themeMode,
+                      decoration: const InputDecoration(
+                        labelText: 'Aparencia',
+                      ),
+                      items: AppThemePreference.values
+                          .map(
+                            (themeMode) => DropdownMenuItem(
+                              value: themeMode,
+                              child: Text(_themeModeLabel(themeMode)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _themeMode = value;
+                          _isDirty = true;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
                       initialValue: _defaultDurationMinutes,
                       decoration: const InputDecoration(
@@ -160,6 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             startSoundEnabled: _startSoundEnabled,
             endSoundEnabled: _endSoundEnabled,
             defaultDurationMinutes: _defaultDurationMinutes,
+            themeMode: _themeMode,
           ),
         ),
       );
@@ -199,6 +223,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _durationOptions.contains(preferences.defaultDurationMinutes)
         ? preferences.defaultDurationMinutes
         : 10;
+    _themeMode = preferences.themeMode;
   }
 
   void _showSnackBar(String message) {
@@ -207,6 +232,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ..clearSnackBars()
       ..showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+String _themeModeLabel(AppThemePreference themeMode) {
+  return switch (themeMode) {
+    AppThemePreference.system => 'Sistema',
+    AppThemePreference.light => 'Claro',
+    AppThemePreference.dark => 'Escuro',
+  };
 }
 
 class _ErrorMessage extends StatelessWidget {

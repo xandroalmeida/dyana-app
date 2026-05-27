@@ -1,15 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum AppThemePreference { system, light, dark }
+
 class UserPreferences {
   const UserPreferences({
     this.startSoundEnabled = true,
     this.endSoundEnabled = true,
     this.defaultDurationMinutes = 10,
+    this.themeMode = AppThemePreference.system,
   });
 
   final bool startSoundEnabled;
   final bool endSoundEnabled;
   final int defaultDurationMinutes;
+  final AppThemePreference themeMode;
 
   factory UserPreferences.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const UserPreferences();
@@ -19,6 +23,7 @@ class UserPreferences {
       endSoundEnabled: json['endSoundEnabled'] as bool? ?? true,
       defaultDurationMinutes:
           _intFromJson(json['defaultDurationMinutes']) ?? 10,
+      themeMode: _themePreferenceFromJson(json['themeMode']),
     );
   }
 
@@ -27,6 +32,7 @@ class UserPreferences {
       'startSoundEnabled': startSoundEnabled,
       'endSoundEnabled': endSoundEnabled,
       'defaultDurationMinutes': defaultDurationMinutes,
+      'themeMode': themeMode.name,
     };
   }
 }
@@ -117,4 +123,13 @@ DateTime? _dateFromJson(Object? value) {
 int? _intFromJson(Object? value) {
   if (value is int) return value;
   return null;
+}
+
+AppThemePreference _themePreferenceFromJson(Object? value) {
+  if (value is! String) return AppThemePreference.system;
+
+  return AppThemePreference.values.firstWhere(
+    (preference) => preference.name == value,
+    orElse: () => AppThemePreference.system,
+  );
 }

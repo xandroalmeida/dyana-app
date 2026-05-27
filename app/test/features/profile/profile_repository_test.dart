@@ -41,7 +41,10 @@ void main() {
           uid: 'uid-1',
           email: 'person@example.com',
           name: 'Person',
-          preferences: UserPreferences(defaultDurationMinutes: 20),
+          preferences: UserPreferences(
+            defaultDurationMinutes: 20,
+            themeMode: AppThemePreference.dark,
+          ),
         ),
       );
 
@@ -52,6 +55,7 @@ void main() {
         'startSoundEnabled': true,
         'endSoundEnabled': true,
         'defaultDurationMinutes': 20,
+        'themeMode': 'dark',
       });
     });
   });
