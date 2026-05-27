@@ -81,6 +81,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () => context.go('/session?mode=free'),
             child: const Text('Tempo livre'),
           ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => context.go('/history'),
+                child: const Text('Historico'),
+              ),
+              TextButton(
+                onPressed: () => context.go('/metrics'),
+                child: const Text('Metricas'),
+              ),
+            ],
+          ),
         ],
       ),
     );

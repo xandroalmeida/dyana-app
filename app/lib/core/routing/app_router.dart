@@ -7,10 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/reset_password_screen.dart';
 import '../../features/auth/signup_screen.dart';
+import '../../features/history/history_screen.dart';
 import '../../features/meditation/completion_screen.dart';
 import '../../features/meditation/home_screen.dart';
 import '../../features/meditation/meditation_session.dart';
 import '../../features/meditation/session_screen.dart';
+import '../../features/metrics/metrics_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../firebase/firebase_providers.dart';
@@ -52,6 +54,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               int.tryParse(state.uri.queryParameters['seconds'] ?? '') ?? 0;
           return CompletionScreen(duration: Duration(seconds: seconds));
         },
+      ),
+      GoRoute(
+        path: '/history',
+        builder: (context, state) => const HistoryScreen(),
+      ),
+      GoRoute(
+        path: '/metrics',
+        builder: (context, state) => const MetricsScreen(),
       ),
       GoRoute(
         path: '/profile',
