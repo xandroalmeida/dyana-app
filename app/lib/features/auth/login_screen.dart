@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
+import 'auth_error_message.dart';
 import 'auth_repository.dart';
 
 String? requiredEmail(String? value) {
@@ -16,13 +16,6 @@ String? requiredEmail(String? value) {
 String? _requiredPassword(String? value) {
   if (value == null || value.isEmpty) return 'Informe sua senha.';
   return null;
-}
-
-String _authErrorMessage(Object error) {
-  if (error is FirebaseAuthException) {
-    return error.message ?? 'Nao foi possivel entrar.';
-  }
-  return 'Nao foi possivel entrar.';
 }
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -57,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(_authErrorMessage(error))));
+        ).showSnackBar(SnackBar(content: Text(authErrorMessage(error))));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -72,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(_authErrorMessage(error))));
+        ).showSnackBar(SnackBar(content: Text(authErrorMessage(error))));
       }
     } finally {
       if (mounted) setState(() => _isGoogleSubmitting = false);

@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
+import 'auth_error_message.dart';
 import 'auth_repository.dart';
 import 'login_screen.dart';
 
@@ -17,13 +17,6 @@ String? _requiredSignupPassword(String? value) {
   if (value == null || value.isEmpty) return 'Informe uma senha.';
   if (value.length < 6) return 'Use pelo menos 6 caracteres.';
   return null;
-}
-
-String _authErrorMessage(Object error) {
-  if (error is FirebaseAuthException) {
-    return error.message ?? 'Nao foi possivel criar sua conta.';
-  }
-  return 'Nao foi possivel criar sua conta.';
 }
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -63,7 +56,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(_authErrorMessage(error))));
+        ).showSnackBar(SnackBar(content: Text(authErrorMessage(error))));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
