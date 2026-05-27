@@ -3,4 +3,8 @@ class AppVersion {
     'APP_VERSION',
     defaultValue: 'dev',
   );
+
+  static bool get isRelease => value != 'dev';
+
+  static String get label => 'Versao $value';
 }

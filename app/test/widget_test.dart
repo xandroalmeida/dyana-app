@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  const appVersion = String.fromEnvironment('APP_VERSION', defaultValue: 'dev');
+
   testWidgets('PrimaryButton renders its label', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -32,5 +34,21 @@ void main() {
 
     expect(find.byTooltip('Voltar'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+  });
+
+  testWidgets('AppScaffold shows release version stamp', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AppScaffold(title: 'Inicio', child: Text('Conteudo')),
+      ),
+    );
+
+    if (appVersion == 'dev') {
+      expect(find.textContaining('Versao'), findsNothing);
+    } else {
+      expect(find.text('Versao $appVersion'), findsOneWidget);
+    }
   });
 }
