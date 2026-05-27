@@ -1,11 +1,11 @@
 {
-    "name": "app",
-    "short_name": "app",
+    "name": "Dyana",
+    "short_name": "Dyana",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F5F5F7",
+    "theme_color": "#F5F5F7",
+    "description": "Um timer calmo para meditar.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
