@@ -51,6 +51,24 @@ jobs:
         working-directory: app
         run: flutter build web --release --dart-define=APP_VERSION=${GITHUB_REF_NAME}
 
+      - name: Stamp service worker release
+        working-directory: app
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'build/web/flutter_bootstrap.js';
+          const version = process.env.GITHUB_REF_NAME;
+          const bootstrap = fs.readFileSync(path, 'utf8');
+          const stamped = bootstrap.replace(
+            /serviceWorkerVersion: "[^"]+"/,
+            `serviceWorkerVersion: "${version}"`
+          );
+          if (stamped === bootstrap) {
+            throw new Error('Could not stamp serviceWorkerVersion');
+          }
+          fs.writeFileSync(path, stamped);
+          NODE
+
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
