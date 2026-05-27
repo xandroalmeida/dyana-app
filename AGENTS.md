@@ -2,7 +2,9 @@
 
 ## Politica de Versionamento
 
-Sempre que o usuario pedir uma nova release, use tags no formato:
+Release/tag/deploy automatico so devem ser disparados quando o usuario pedir explicitamente uma nova release ou pedir explicitamente para gerar uma versao. Nao crie tag, nao publique release e nao dispare o workflow de deploy apenas por ter feito commit, fix, melhoria ou ajuste de infraestrutura.
+
+Quando o usuario pedir uma nova release, use tags no formato:
 
 ```text
 vA.B.C
