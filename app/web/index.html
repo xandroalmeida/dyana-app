@@ -34,23 +34,72 @@
 </head>
 <body>
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.getRegistration().then(function (registration) {
-          if (!registration) return;
-          registration.update();
-          registration.addEventListener('updatefound', function () {
-            var newWorker = registration.installing;
-            if (!newWorker) return;
-            newWorker.addEventListener('statechange', function () {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                window.location.reload();
-              }
-            });
-          });
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+
+      var hasReloadedForUpdate = false;
+
+      function reloadForUpdate() {
+        if (hasReloadedForUpdate) return;
+        hasReloadedForUpdate = true;
+        window.location.reload();
+      }
+
+      function activateWaitingWorker(worker) {
+        if (!worker) return;
+        try {
+          worker.postMessage('skipWaiting');
+        } catch (_) {
+          reloadForUpdate();
+        }
+      }
+
+      function watchInstallingWorker(worker) {
+        if (!worker) return;
+        worker.addEventListener('statechange', function () {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            activateWaitingWorker(worker);
+          }
+          if (worker.state === 'activated' && navigator.serviceWorker.controller) {
+            reloadForUpdate();
+          }
         });
+      }
+
+      function checkForUpdate(registration) {
+        if (!registration) return;
+
+        activateWaitingWorker(registration.waiting);
+        watchInstallingWorker(registration.installing);
+
+        registration.addEventListener('updatefound', function () {
+          watchInstallingWorker(registration.installing);
+        });
+
+        registration.update().catch(function () {});
+      }
+
+      navigator.serviceWorker.addEventListener('controllerchange', reloadForUpdate);
+
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.ready.then(checkForUpdate).catch(function () {});
+        navigator.serviceWorker.getRegistration().then(checkForUpdate).catch(function () {});
+
+        window.addEventListener('focus', function () {
+          navigator.serviceWorker.getRegistration().then(checkForUpdate).catch(function () {});
+        });
+
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') {
+            navigator.serviceWorker.getRegistration().then(checkForUpdate).catch(function () {});
+          }
+        });
+
+        window.setInterval(function () {
+          navigator.serviceWorker.getRegistration().then(checkForUpdate).catch(function () {});
+        }, 10 * 60 * 1000);
       });
-    }
+    })();
   </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
