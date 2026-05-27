@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,6 +10,7 @@ import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../profile/profile_repository.dart';
 import '../profile/user_profile.dart';
+import 'meditation_sound_player.dart';
 import 'meditation_session.dart';
 import 'session_repository.dart';
 
@@ -78,10 +78,6 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
       }
     } catch (_) {
       // Preference loading should not block meditation.
-    } finally {
-      if (mounted && _preferences.startSoundEnabled) {
-        unawaited(SystemSound.play(SystemSoundType.click));
-      }
     }
   }
 
@@ -147,7 +143,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
     try {
       await repository.save(user.uid, session);
       if (_preferences.endSoundEnabled) {
-        unawaited(SystemSound.play(SystemSoundType.click));
+        unawaited(ref.read(meditationSoundPlayerProvider).playEnd());
       }
       if (mounted) {
         context.go('/completion?seconds=$durationSeconds&id=${session.id}');

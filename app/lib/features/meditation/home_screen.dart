@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,9 @@ import '../../core/l10n/app_l10n.dart';
 import '../../core/widgets/app_scaffold.dart';
 import '../../core/widgets/primary_button.dart';
 import '../auth/auth_repository.dart';
+import '../profile/profile_repository.dart';
+import '../profile/user_profile.dart';
+import 'meditation_sound_player.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +22,16 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _durations = [3, 5, 10, 15, 20, 30];
   int _selectedDuration = 10;
+
+  void _startSession(String location) {
+    final preferences =
+        ref.read(userPreferencesProvider).valueOrNull ??
+        const UserPreferences();
+    if (preferences.startSoundEnabled) {
+      unawaited(ref.read(meditationSoundPlayerProvider).playStart());
+    }
+    context.go(location);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,13 +90,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           PrimaryButton(
             label: l10n.start,
             icon: const Icon(Icons.play_arrow),
-            onPressed: () {
-              context.go('/session?mode=fixed&minutes=$_selectedDuration');
-            },
+            onPressed: () =>
+                _startSession('/session?mode=fixed&minutes=$_selectedDuration'),
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed: () => context.go('/session?mode=free'),
+            onPressed: () => _startSession('/session?mode=free'),
             child: Text(l10n.freeTime),
           ),
           const SizedBox(height: 24),
