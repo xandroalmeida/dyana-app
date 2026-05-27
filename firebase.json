@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "../app/build/web",
+    "public": "app/build/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
@@ -48,7 +48,7 @@
     ]
   },
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "firebase/firestore.rules",
+    "indexes": "firebase/firestore.indexes.json"
   }
 }

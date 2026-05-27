@@ -58,4 +58,3 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DAYANA_716B3 }}
           projectId: dayana-716b3
           channelId: live
-          entryPoint: firebase
