@@ -17,6 +17,7 @@ class CompletionScreen extends StatelessWidget {
 
     return AppScaffold(
       title: 'Sessao concluida',
+      showBackButton: true,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,

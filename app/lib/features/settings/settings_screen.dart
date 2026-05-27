@@ -34,6 +34,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (user == null) {
       return const AppScaffold(
         title: 'Configuracoes',
+        showBackButton: true,
         child: Text('Entre para editar suas configuracoes.'),
       );
     }
@@ -49,6 +50,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return AppScaffold(
       title: 'Configuracoes',
+      showBackButton: true,
       child: FutureBuilder<void>(
         future: ensureProfileFuture,
         builder: (context, ensureSnapshot) {

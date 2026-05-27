@@ -35,12 +35,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     if (user == null) {
       return const AppScaffold(
         title: 'Historico',
+        showBackButton: true,
         child: Text('Entre para ver seu historico.'),
       );
     }
 
     return AppScaffold(
       title: 'Historico',
+      showBackButton: true,
       child: StreamBuilder<List<MeditationSession>>(
         stream: ref.watch(sessionRepositoryProvider).watchRecent(user.uid),
         builder: (context, snapshot) {

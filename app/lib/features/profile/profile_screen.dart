@@ -40,6 +40,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (user == null) {
       return const AppScaffold(
         title: 'Perfil',
+        showBackButton: true,
         child: Text('Entre para editar seu perfil.'),
       );
     }
@@ -55,6 +56,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return AppScaffold(
       title: 'Perfil',
+      showBackButton: true,
       child: FutureBuilder<void>(
         future: ensureProfileFuture,
         builder: (context, ensureSnapshot) {

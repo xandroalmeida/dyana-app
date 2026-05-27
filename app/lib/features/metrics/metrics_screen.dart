@@ -18,12 +18,14 @@ class MetricsScreen extends ConsumerWidget {
     if (user == null) {
       return const AppScaffold(
         title: 'Metricas',
+        showBackButton: true,
         child: Text('Entre para ver suas metricas.'),
       );
     }
 
     return AppScaffold(
       title: 'Metricas',
+      showBackButton: true,
       child: StreamBuilder(
         stream: ref.watch(sessionRepositoryProvider).watchRecent(user.uid),
         builder: (context, snapshot) {
