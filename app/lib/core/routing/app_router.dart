@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/reset_password_screen.dart';
 import '../../features/auth/signup_screen.dart';
+import '../../features/meditation/completion_screen.dart';
 import '../../features/meditation/home_screen.dart';
+import '../../features/meditation/meditation_session.dart';
+import '../../features/meditation/session_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../firebase/firebase_providers.dart';
@@ -30,6 +33,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/session',
+        builder: (context, state) {
+          final mode = state.uri.queryParameters['mode'] == 'free'
+              ? MeditationMode.free
+              : MeditationMode.fixed;
+          final minutes = int.tryParse(
+            state.uri.queryParameters['minutes'] ?? '',
+          );
+          return SessionScreen(mode: mode, minutes: minutes);
+        },
+      ),
+      GoRoute(
+        path: '/completion',
+        builder: (context, state) {
+          final seconds =
+              int.tryParse(state.uri.queryParameters['seconds'] ?? '') ?? 0;
+          return CompletionScreen(duration: Duration(seconds: seconds));
+        },
+      ),
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
