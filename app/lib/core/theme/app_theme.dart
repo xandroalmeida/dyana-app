@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 const Color appPrimaryTextColor = Color(0xFF1D1D1F);
 const Color appSecondaryTextColor = Color(0xFF6E6E73);
@@ -7,15 +8,12 @@ const Color appNeutralColor = Color(0xFFF5F5F7);
 const Color appSurfaceColor = Color(0xFFFFFFFF);
 
 ThemeData buildAppTheme() {
-  final baseTextTheme = ThemeData.light().textTheme.apply(
-    fontFamily: 'Inter',
-    bodyColor: appPrimaryTextColor,
-    displayColor: appPrimaryTextColor,
-  );
+  final baseTheme = ThemeData(useMaterial3: true);
+  final baseTextTheme = GoogleFonts.interTextTheme(
+    baseTheme.textTheme,
+  ).apply(bodyColor: appPrimaryTextColor, displayColor: appPrimaryTextColor);
 
-  return ThemeData(
-    useMaterial3: true,
-    fontFamily: 'Inter',
+  return baseTheme.copyWith(
     scaffoldBackgroundColor: appNeutralColor,
     colorScheme: const ColorScheme.light(
       primary: appActionColor,
