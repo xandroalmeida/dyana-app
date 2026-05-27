@@ -20,9 +20,16 @@ void main() {
 
     final json = session.toJson();
 
-    expect(json['durationSeconds'], 600);
-    expect(json['mode'], 'fixed');
-    expect(json['plannedDurationSeconds'], 600);
-    expect(json['completed'], true);
+    expect(json, {
+      'startedAt': started,
+      'endedAt': ended,
+      'durationSeconds': 600,
+      'mode': 'fixed',
+      'plannedDurationSeconds': 600,
+      'completed': true,
+      'startSoundEnabled': true,
+      'endSoundEnabled': true,
+      'createdAt': started,
+    });
   });
 }
