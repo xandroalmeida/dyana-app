@@ -17,13 +17,30 @@ class MeditationTimerController {
   final Duration? plannedDuration;
   DateTime? _startedAt;
   Duration _pausedDuration = Duration.zero;
+  DateTime? _pausedAt;
+
+  bool get isPaused => _pausedAt != null;
 
   void start(DateTime now) {
     _startedAt = now;
+    _pausedDuration = Duration.zero;
+    _pausedAt = null;
   }
 
-  void addPausedDuration(Duration duration) {
-    _pausedDuration += duration;
+  void pause(DateTime now) {
+    if (_startedAt == null || _pausedAt != null) return;
+    _pausedAt = now;
+  }
+
+  void resume(DateTime now) {
+    final pausedAt = _pausedAt;
+    if (pausedAt == null) return;
+
+    final pause = now.difference(pausedAt);
+    if (!pause.isNegative) {
+      _pausedDuration += pause;
+    }
+    _pausedAt = null;
   }
 
   MeditationTimerState tick(DateTime now) {
@@ -35,7 +52,12 @@ class MeditationTimerController {
       );
     }
 
-    final elapsed = now.difference(startedAt) - _pausedDuration;
+    final effectiveNow = _pausedAt ?? now;
+    final measuredElapsed =
+        effectiveNow.difference(startedAt) - _pausedDuration;
+    final elapsed = measuredElapsed.isNegative
+        ? Duration.zero
+        : measuredElapsed;
     final planned = plannedDuration;
     if (planned == null) {
       return MeditationTimerState(elapsed: elapsed, completed: false);

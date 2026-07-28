@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/firebase/firebase_providers.dart';
 import '../../core/l10n/app_l10n.dart';
@@ -13,6 +14,7 @@ import '../profile/user_profile.dart';
 import 'meditation_sound_player.dart';
 import 'meditation_session.dart';
 import 'session_repository.dart';
+import 'timer_controller.dart';
 
 class SessionScreen extends ConsumerStatefulWidget {
   const SessionScreen({super.key, required this.mode, this.minutes});
@@ -24,8 +26,9 @@ class SessionScreen extends ConsumerStatefulWidget {
   ConsumerState<SessionScreen> createState() => _SessionScreenState();
 }
 
-class _SessionScreenState extends ConsumerState<SessionScreen> {
-  final Stopwatch _stopwatch = Stopwatch();
+class _SessionScreenState extends ConsumerState<SessionScreen>
+    with WidgetsBindingObserver {
+  late final MeditationTimerController _timerController;
   Timer? _ticker;
   Duration _elapsed = Duration.zero;
   UserPreferences _preferences = const UserPreferences();
@@ -50,16 +53,49 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
   @override
   void initState() {
     super.initState();
-    _startedAt = DateTime.now().toUtc();
-    _stopwatch.start();
+    WidgetsBinding.instance.addObserver(this);
+    final now = DateTime.now().toUtc();
+    _startedAt = now;
+    _timerController = widget.mode == MeditationMode.free
+        ? MeditationTimerController.free()
+        : MeditationTimerController.fixed(_plannedDuration);
+    _timerController.start(now);
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    unawaited(_enableWakeLock());
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPreferences());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
+    unawaited(_disableWakeLock());
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+
+    _tick();
+    unawaited(_enableWakeLock());
+  }
+
+  Future<void> _enableWakeLock() async {
+    try {
+      await WakelockPlus.enable();
+    } catch (_) {
+      // Some browsers and battery modes may reject the wake lock request.
+      // Wall-clock timing still keeps the meditation duration accurate.
+    }
+  }
+
+  Future<void> _disableWakeLock() async {
+    try {
+      await WakelockPlus.disable();
+    } catch (_) {
+      // The browser may already have released the lock.
+    }
   }
 
   Future<void> _loadPreferences() async {
@@ -83,32 +119,39 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
 
   void _tick() {
     if (!mounted || _finished) return;
-    setState(() => _elapsed = _stopwatch.elapsed);
+    final state = _timerController.tick(DateTime.now().toUtc());
+    setState(() => _elapsed = state.elapsed);
 
-    final remaining = _remaining;
-    if (remaining == Duration.zero && !_isFinishing) {
+    if (state.completed && !_isFinishing) {
       unawaited(_finish(completed: true));
     }
   }
 
   void _togglePause() {
+    final now = DateTime.now().toUtc();
+    if (_timerController.isPaused) {
+      _timerController.resume(now);
+    } else {
+      _timerController.pause(now);
+    }
+    final state = _timerController.tick(now);
+
     setState(() {
-      if (_stopwatch.isRunning) {
-        _stopwatch.stop();
-        _isPaused = true;
-      } else {
-        _stopwatch.start();
-        _isPaused = false;
-      }
+      _elapsed = state.elapsed;
+      _isPaused = _timerController.isPaused;
     });
   }
 
   Future<void> _finish({required bool completed}) async {
     if (_isFinishing || _finished) return;
-    setState(() => _isFinishing = true);
+    final now = DateTime.now().toUtc();
+    final timerState = _timerController.tick(now);
+    setState(() {
+      _elapsed = timerState.elapsed;
+      _isFinishing = true;
+    });
     _finished = true;
     _ticker?.cancel();
-    _stopwatch.stop();
 
     final user = ref.read(firebaseAuthProvider).currentUser;
     if (user == null) {
@@ -119,13 +162,12 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
     final planned = _plannedDuration;
     final durationSeconds = completed && planned != null
         ? planned.inSeconds
-        : _stopwatch.elapsed.inSeconds;
+        : timerState.elapsed.inSeconds;
     if (durationSeconds <= 0) {
       if (mounted) context.go('/');
       return;
     }
 
-    final now = DateTime.now().toUtc();
     final repository = ref.read(sessionRepositoryProvider);
     final session = MeditationSession(
       id: repository.newSessionId(user.uid),
